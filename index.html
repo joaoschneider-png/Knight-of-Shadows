@@ -1,187 +1,179 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta property="og:image" content="48877.png" />
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Knight of Shadows — Noite</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
 <style>
-/* =====================================================
-   1. BASE E VARIÁVEIS DE COR (tema noturno)
-   ===================================================== */
-:root{
-  --ink:#0a0710; --gold:#c9b26a; --blood:#8f1224; --parch:#c9c4d8; --wood:#241a30;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
-}
+:root{--gold:#c9b26a;--blood:#8f1224;--parch:#c9c4d8;--wood:#241a30;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}
-html,body{
-  height:100%; margin:0; background:#0b0810; color:var(--parch);
-  font-family:'Press Start 2P','Courier New',monospace;
-  overflow:hidden; touch-action:none; user-select:none; -webkit-user-select:none;
-}
-canvas{image-rendering:pixelated; display:block}
-#stage{position:fixed; inset:0; display:flex; align-items:center; justify-content:center}
-#game{border:4px solid var(--wood); box-shadow:0 0 0 4px #000, 0 0 40px #000}
-
-/* Telas em camadas (menu, nome, ajuda, game over) */
-.ov{position:fixed; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; padding:16px}
+html,body{height:100%;margin:0;background:#0b0810;color:var(--parch);font-family:'Press Start 2P','Courier New',monospace;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+canvas{image-rendering:pixelated;display:block}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#game{border:4px solid var(--wood);box-shadow:0 0 0 4px #000,0 0 40px #000}
+.ov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;padding:16px;background:#07050a}
 .ov.on{display:flex}
-
-/* Painel e botão padrão */
-.panel{
-  position:relative; background:linear-gradient(#241c33,#0f0a17);
-  border:4px solid var(--gold); outline:4px solid #000; padding:28px 24px;
-  text-align:center; max-width:94vw; box-shadow:8px 8px 0 #000;
-}
-h1{font-size:clamp(18px,4.6vw,34px); line-height:1.5; margin:0 0 28px; color:var(--gold); text-shadow:4px 4px 0 #000}
-.btn{
-  font:inherit; font-size:clamp(14px,3vw,20px); color:#fff; background:var(--blood);
-  border:4px solid #000; box-shadow:inset -4px -4px 0 #5e0d19, inset 4px 4px 0 #d8394b;
-  padding:16px 36px; cursor:pointer;
-}
+.panel{position:relative;background:linear-gradient(#241c33,#0f0a17);border:4px solid var(--gold);outline:4px solid #000;padding:24px 22px;text-align:center;max-width:94vw;max-height:96vh;overflow:auto;box-shadow:8px 8px 0 #000}
+h1{font-size:clamp(18px,4.6vw,34px);line-height:1.5;margin:0 0 20px;color:var(--gold);text-shadow:4px 4px 0 #000}
+.btn{font:inherit;font-size:clamp(12px,3vw,18px);color:#fff;background:var(--blood);border:4px solid #000;box-shadow:inset -4px -4px 0 #5e0d19,inset 4px 4px 0 #d8394b;padding:14px 28px;cursor:pointer}
 .btn:active{transform:translate(2px,2px)}
-.btn:disabled{opacity:.35; cursor:not-allowed}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.alt{background:#2a2540;box-shadow:inset -4px -4px 0 #171428,inset 4px 4px 0 #4a4570}
+.m{display:block;width:100%;margin:10px 0}
+.inp{font:inherit;font-size:18px;background:#000;color:var(--gold);border:4px solid var(--gold);padding:12px;text-align:center;width:min(420px,84vw);outline:none}
+.note{font-size:8px;color:#8a85a8;margin-top:12px;line-height:1.6}
 
-/* =====================================================
-   2. TELA INICIAL
-   ===================================================== */
-#menu canvas{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+#menu{background:none}
+#menu canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#name label,#hist label{font-size:clamp(14px,3.4vw,22px);margin-bottom:20px;text-align:center;line-height:1.6}
+#hint{min-height:20px;margin-top:14px;font-size:10px;color:#9a8f78;text-align:center}
+#cont{position:absolute;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom))}
 
-/* =====================================================
-   3. TELA DE NOME
-   ===================================================== */
-#name{background:#07050a}
-#name label{font-size:clamp(14px,3.4vw,22px); margin-bottom:24px; text-align:center; line-height:1.6}
-#nm{
-  font:inherit; font-size:20px; background:#000; color:var(--gold);
-  border:4px solid var(--gold); padding:14px; text-align:center; width:min(420px,88vw); outline:none;
-}
-#hint{min-height:20px; margin-top:16px; font-size:10px; color:#9a8f78; text-align:center}
-#cont{position:absolute; right:max(16px,env(safe-area-inset-right)); bottom:max(16px,env(safe-area-inset-bottom))}
+#help .panel{padding:18px 16px;width:min(640px,96vw)}
+#help h1{font-size:clamp(16px,4vw,24px);margin-bottom:12px}
+#how{font-size:9px;line-height:1.9;margin:0 0 12px;text-align:left}
+#hl{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;text-align:left;margin-bottom:14px}
+#hl h2{font-size:11px;color:var(--gold);margin:0 0 6px}
+.hi{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:2px solid #2a190e;font-size:8px;line-height:1.7}
+.hi canvas{width:40px;height:40px;flex:none;background:#14221a;border:2px solid #000}
+#go{display:block;margin-left:auto;font-size:clamp(12px,3vw,16px);padding:12px 26px}
 
-/* =====================================================
-   4. TELA "COMO JOGAR"
-   ===================================================== */
-#help .panel{max-height:96vh; overflow:auto; padding:18px 16px; width:min(640px,96vw)}
-#help h1{font-size:clamp(16px,4vw,24px); margin-bottom:12px}
-#how{font-size:9px; line-height:1.9; margin:0 0 12px; text-align:left}
-#hl{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:12px; text-align:left; margin-bottom:14px}
-#hl h2{font-size:11px; color:var(--gold); margin:0 0 6px}
-.hi{display:flex; align-items:center; gap:10px; padding:5px 0; border-bottom:2px solid #2a190e; font-size:8px; line-height:1.7}
-.hi canvas{width:40px; height:40px; flex:none; background:#14221a; border:2px solid #000}
-#go{display:block; margin-left:auto; font-size:clamp(12px,3vw,16px); padding:12px 26px}
+#over{background:rgba(8,4,10,.9)}
+#over h1,#pausa h1{color:var(--blood);font-size:clamp(22px,6vw,42px);margin-bottom:10px}
+.tb{width:min(520px,92vw);margin:12px 0;font-size:10px;border-collapse:collapse}
+.tb td,.tb th{padding:6px;text-align:left;border-bottom:2px solid #3a2a22}
+.tb tr.me{color:var(--gold)}
+#hr{font-size:10px;line-height:1.8;margin-top:14px;max-height:48vh;overflow:auto;text-align:center}
+#pausa{background:rgba(8,4,10,.78)}
 
-/* =====================================================
-   5. TELA GAME OVER E RANKING
-   ===================================================== */
-#over{background:rgba(8,4,10,.88)}
-#over h1{color:var(--blood); font-size:clamp(22px,6vw,42px); margin-bottom:10px}
-#rk{width:min(520px,92vw); max-height:46vh; overflow:auto; margin:14px 0; font-size:11px; border-collapse:collapse}
-#rk td,#rk th{padding:8px 6px; text-align:left; border-bottom:2px solid #3a2a22}
-#rk tr.me{color:var(--gold)}
-
-/* =====================================================
-   6. EXTRAS: TRANSIÇÃO, BOTÕES MOBILE, MUDO
-   ===================================================== */
-#fade{position:fixed; inset:0; background:#000; opacity:0; pointer-events:none; transition:opacity .8s; z-index:20}
-#fade.on{opacity:1; pointer-events:all}
-
-#pad{
-  position:fixed; right:max(12px,env(safe-area-inset-right)); bottom:max(12px,env(safe-area-inset-bottom));
-  display:none; grid-template:repeat(3,58px)/repeat(3,58px); gap:4px; z-index:5;
-}
+#fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .8s;z-index:20}
+#fade.on{opacity:1;pointer-events:all}
+#pad{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:none;grid-template:repeat(3,58px)/repeat(3,58px);gap:4px;z-index:5}
 #pad.on{display:grid}
-#pad button{font:inherit; font-size:22px; color:#fff; background:rgba(20,16,26,.7); border:3px solid var(--gold); border-radius:8px; touch-action:none}
+#pad button{font:inherit;font-size:22px;color:#fff;background:rgba(20,16,26,.7);border:3px solid var(--gold);border-radius:8px;touch-action:none}
 #pad button:active{background:var(--blood)}
-
-#mute{
-  position:fixed; left:max(10px,env(safe-area-inset-left)); bottom:max(10px,env(safe-area-inset-bottom));
-  z-index:6; font-size:18px; background:#000a; color:#fff; border:2px solid var(--gold); padding:8px; cursor:pointer;
-}
+#mute,#pause{position:fixed;z-index:6;font-size:18px;background:#000a;color:#fff;border:2px solid var(--gold);padding:8px;cursor:pointer}
+#mute{left:max(10px,env(safe-area-inset-left));bottom:max(10px,env(safe-area-inset-bottom))}
+#pause{right:max(10px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));display:none}
 @media (prefers-reduced-motion:reduce){#fade{transition:none}}
 </style>
 </head>
-
 <body>
-<!-- ================= TELA DO JOGO ================= -->
 <div id="stage"><canvas id="game" width="480" height="480"></canvas></div>
 
-<!-- ================= 1. TELA INICIAL ================= -->
 <div id="menu" class="ov on">
   <canvas id="bg" width="160" height="120"></canvas>
   <div class="panel">
     <h1>KNIGHT<br>OF SHADOWS</h1>
-    <p style="font-size:9px;margin:-14px 0 22px;color:#8a85a8">Versão Noturna</p>
-    <button class="btn" id="play">Jogar</button>
+    <p style="font-size:9px;margin:-10px 0 16px;color:#8a85a8">Versão Noturna</p>
+    <button class="btn m" id="play">Jogar</button>
+    <button class="btn m alt" id="bHist">Histórico</button>
+    <button class="btn m alt" id="bRank">Ranking mundial</button>
+    <div class="note" id="net">○ Sem conexão: dados só neste navegador</div>
   </div>
 </div>
 
-<!-- ================= 2. TELA DE NOME ================= -->
 <div id="name" class="ov">
   <label for="nm">Qual é seu nome?</label>
-  <input id="nm" maxlength="12" autocomplete="off">
+  <input id="nm" class="inp" maxlength="12" autocomplete="off">
   <div id="hint"></div>
   <button class="btn" id="cont" disabled>Continuar</button>
 </div>
 
-<!-- ================= 3. TELA COMO JOGAR ================= -->
 <div id="help" class="ov">
   <div class="panel">
     <h1>Como jogar</h1>
-    <p id="how">Mova o cavaleiro com W, A, S, D (ou pelas setas na tela do celular). Pegue os tesouros que cruzam o mapa para somar pontos e desvie das ameaças: ao tocar em você, elas causam dano e somem. Cada vida tem 10 de vida e você tem 3 vidas. Com o tempo tudo fica mais rápido e aparece mais gente na tela. Faça o maior número de pontos!</p>
+    <p id="how">Mova o cavaleiro com W, A, S, D (ou pelas setas na tela do celular). Pegue os tesouros que cruzam o mapa para somar pontos e desvie das ameaças: ao tocar em você, elas causam dano e somem. Cada vida tem 10 de vida e você tem 3 vidas. Com o tempo tudo fica mais rápido e aparece mais gente na tela. Para pausar, use o botão no canto superior direito ou a tecla P. Faça o maior número de pontos!</p>
     <div id="hl"></div>
     <button class="btn" id="go">Começar</button>
   </div>
 </div>
 
-<!-- ================= 4. GAME OVER + RANKING ================= -->
 <div id="over" class="ov">
-  <h1>Gamer Over</h1>
+  <h1>Game Over</h1>
   <div id="fin" style="font-size:12px;line-height:1.8;text-align:center"></div>
-  <table id="rk"></table>
+  <table id="rk" class="tb"></table>
   <button class="btn" id="back">Continuar</button>
 </div>
 
-<!-- ================= EXTRAS ================= -->
+<div id="hist" class="ov">
+  <div class="panel" style="width:min(560px,96vw)">
+    <label for="hn">Histórico do jogador</label>
+    <input id="hn" class="inp" maxlength="12" autocomplete="off" placeholder="Digite o nick">
+    <button class="btn m" id="hs">Pesquisar</button>
+    <div id="hr"></div>
+    <button class="btn m alt" id="hb">Voltar</button>
+  </div>
+</div>
+
+<div id="rank" class="ov">
+  <div class="panel">
+    <h1>Ranking mundial</h1>
+    <table id="rt" class="tb"></table>
+    <button class="btn m alt" id="rb">Voltar</button>
+  </div>
+</div>
+
+<div id="pausa" class="ov">
+  <div class="panel">
+    <h1>Pausado</h1>
+    <button class="btn m" id="resume">Continuar</button>
+    <button class="btn m alt" id="quit">Encerrar partida</button>
+  </div>
+</div>
+
 <div id="pad">
   <span></span><button data-k="w">▲</button><span></span>
   <button data-k="a">◀</button><span></span><button data-k="d">▶</button>
   <span></span><button data-k="s">▼</button><span></span>
 </div>
 <button id="mute" title="Som">🔊</button>
+<button id="pause" title="Pausar">⏸</button>
 <div id="fade"></div>
 
 <script>
 const $ = s => document.querySelector(s);
 
-/* =====================================================
-   1. SALVAMENTO (nomes, recordes e histórico)
-   ===================================================== */
-let S = {players:{}, last:''};
-try{ S = JSON.parse(localStorage.getItem('kos_v1')) || S }catch(e){}
-const save = () => { try{ localStorage.setItem('kos_v1', JSON.stringify(S)) }catch(e){} };
+/* ===== 1. ARMAZENAMENTO (nuvem compartilhada ou local) ===== */
+let DB = null;   // coleção "players" na nuvem (liga quando disponível)
+(async () => {
+  try{
+    const c = await (window.claude && window.claude.use('db'));
+    if(c){ DB = c.collection('players'); $('#net').textContent = '● Online: histórico e ranking compartilhados' }
+  }catch(e){}
+})();
+const key = n => [...n.toLowerCase()].map(c => c.codePointAt(0).toString(36)).join('_');
+const lj = (k, d) => { try{ return JSON.parse(localStorage.getItem(k)) || d }catch(e){ return d } };
+const sj = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)) }catch(e){} };
+const store = {
+  async get(n){
+    if(DB) try{ const d = await DB.doc(key(n)).get(); return d.exists ? d.data() : null }catch(e){}
+    return lj('kos_v2', {})[key(n)] || null;
+  },
+  async put(n, r){
+    if(DB) try{ await DB.doc(key(n)).set(r); return }catch(e){}
+    const l = lj('kos_v2', {}); l[key(n)] = r; sj('kos_v2', l);
+  },
+  async all(){
+    if(DB) try{ return (await DB.get()).docs.map(d => d.data()) }catch(e){}
+    return Object.values(lj('kos_v2', {}));
+  }
+};
+const meta = lj('kos_meta', {last:'', seen:{}});
 
-/* =====================================================
-   2. ÁUDIO: EFEITOS SONOROS E MÚSICA (tema sombrio)
-   ===================================================== */
-let AC, mst, mg, sg, nb, muted = false, rate = 1;
-
+/* ===== 2. ÁUDIO ===== */
+let AC, mst, mg, sg, nb, muted = false, rate = 1, paused = false;
 function initAudio(){
   if(AC) return;
-  AC  = new (window.AudioContext || window.webkitAudioContext)();
-  mst = AC.createGain(); mst.connect(AC.destination);              // volume geral
-  mg  = AC.createGain(); mg.gain.value = .1;  mg.connect(mst);     // volume da música
-  sg  = AC.createGain(); sg.gain.value = .3;  sg.connect(mst);     // volume dos efeitos
-  nb  = AC.createBuffer(1, AC.sampleRate/2, AC.sampleRate);        // ruído (pancadas)
-  const d = nb.getChannelData(0);
-  for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
+  AC = new (window.AudioContext || window.webkitAudioContext)();
+  mst = AC.createGain(); mst.connect(AC.destination);
+  mg = AC.createGain(); mg.gain.value = .1; mg.connect(mst);
+  sg = AC.createGain(); sg.gain.value = .3; sg.connect(mst);
+  nb = AC.createBuffer(1, AC.sampleRate/2, AC.sampleRate);
+  const d = nb.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
   startMusic();
 }
-
 function tone(f, d, type='square', t0=0, f2=0, g=1, dest){
   if(!AC) return;
   const t = AC.currentTime + t0, o = AC.createOscillator(), e = AC.createGain();
@@ -190,188 +182,152 @@ function tone(f, d, type='square', t0=0, f2=0, g=1, dest){
   e.gain.setValueAtTime(g, t); e.gain.exponentialRampToValueAtTime(.001, t+d);
   o.connect(e); e.connect(dest || sg); o.start(t); o.stop(t+d+.02);
 }
-
 function noise(d, t0=0, g=1, dest){
   if(!AC) return;
   const t = AC.currentTime + t0, s = AC.createBufferSource(), e = AC.createGain();
   s.buffer = nb; e.gain.setValueAtTime(g, t); e.gain.exponentialRampToValueAtTime(.001, t+d);
   s.connect(e); e.connect(dest || sg); s.start(t); s.stop(t+d);
 }
-
-/* --- Efeitos sonoros --- */
+/* --- Ruído filtrado (pancadas surdas ou chiados metálicos) --- */
+const nf = (d, t0=0, g=1, hz=800, type='lowpass') => {
+  if(!AC) return;
+  const t = AC.currentTime + t0, s = AC.createBufferSource(), f = AC.createBiquadFilter(), e = AC.createGain();
+  s.buffer = nb; f.type = type; f.frequency.value = hz;
+  e.gain.setValueAtTime(g, t); e.gain.exponentialRampToValueAtTime(.001, t+d);
+  s.connect(f); f.connect(e); e.connect(sg); s.start(t); s.stop(t+d);
+};
+/* --- Sino de catedral (som grave e longo) --- */
+const bell = (f, d, t0=0, g=.8) => {
+  tone(f,      d,    'sine', t0, 0, g);
+  tone(f*2.76, d*.6, 'sine', t0, 0, g*.35);
+  tone(f*5.4,  d*.3, 'sine', t0, 0, g*.15);
+};
+/* --- Efeitos sonoros: quanto mais perigosa a ameaça, mais grave e longo o som --- */
 const SFX = {
-  click: () => { tone(440,.08,'square',0,660) },
-  start: () => { [330,392,494,659].forEach((f,i)=>tone(f,.15,'square',i*.09)) },
-  coin:  () => { tone(988,.07); tone(1319,.18,'square',.07) },
-  neck:  () => { [784,988,1175].forEach((f,i)=>tone(f,.1,'triangle',i*.06)) },
-  crown: () => { [523,659,784,1047,1319].forEach((f,i)=>tone(f,.16,'square',i*.07)) },
-  e0:    () => { tone(220,.18,'sawtooth',0,70); noise(.1,0,.5) },
-  e1:    () => { tone(160,.3,'sawtooth',0,45); noise(.2,0,.8) },
-  e2:    () => { tone(110,.6,'sawtooth',0,28); tone(82,.6,'square',.05,25); noise(.5,0,1) },
-  life:  () => { [392,330,262,196].forEach((f,i)=>tone(f,.2,'triangle',i*.14)) },
-  over:  () => { [330,294,262,247,220,196,165].forEach((f,i)=>tone(f,.3,'sawtooth',i*.18,0,.8)) },
-  level: () => { [523,659,784].forEach((f,i)=>tone(f,.1,'square',i*.07)) }
+  click: () => { tone(300,.05,'square',0,150,.6); nf(.04,0,.3,2000,'highpass') },
+  start: () => { [220,262,330,440].forEach((f,i) => { tone(f,.18,'square',i*.1,0,.7); tone(f/2,.18,'triangle',i*.1,0,.8) }); bell(110,.8,.35,.5) },
+  level: () => [392,523,659].forEach((f,i) => { tone(f,.14,'square',i*.08,0,.6); tone(f*1.5,.14,'triangle',i*.08,0,.4) }),
+  // Tesouros: brilhantes e agudos
+  coin:  () => { tone(1319,.06,'square',0,0,.6); tone(1760,.25,'square',.06,0,.5); tone(2637,.2,'triangle',.06,0,.3) },
+  neck:  () => { [988,1175,1480,1976].forEach((f,i) => tone(f,.14,'triangle',i*.05,0,.8)); tone(2637,.3,'sine',.2,0,.4) },
+  crown: () => { [392,523,659,784,1047].forEach((f,i) => { tone(f,.22,'square',i*.08,0,.6); tone(f/2,.22,'triangle',i*.08,0,.8) }); bell(523,.9,.4,.4) },
+  // Bandido (2 de dano): golpe rápido de adaga
+  e0: () => { nf(.09,0,.7,5000,'highpass'); tone(520,.12,'sawtooth',0,140,.5); tone(180,.1,'square',.04,90,.4) },
+  // Cavaleiro Celeste (5 de dano): choque de espada e armadura
+  e1: () => {
+    tone(740,.35,'square',0,0,.4); tone(1109,.3,'square',0,0,.3); tone(1590,.25,'square',0,0,.2);
+    nf(.12,0,.7,3000,'highpass');
+    tone(130,.25,'sawtooth',.02,45,.8); nf(.2,.02,.6,600);
+  },
+  // Rei Escarlate (10 de dano): estrondo grave, trítono sombrio e sino
+  e2: () => {
+    tone(70,.7,'sine',0,22,1.6);
+    tone(110,.6,'sawtooth',0,30,.8); tone(155,.6,'sawtooth',.02,40,.6);
+    nf(.5,0,1,900);
+    tone(196,.5,'square',.25,49,.4);
+    bell(65,1.2,.12,.9);
+  },
+  // Perder uma vida e fim de jogo
+  life: () => { [392,311,262,196].forEach((f,i) => tone(f,.25,'triangle',i*.15,0,.9)); bell(98,1,.5,.7) },
+  over: () => { [330,294,262,247,220,196,165].forEach((f,i) => { tone(f,.3,'sawtooth',i*.18,0,.7); tone(f/2,.3,'triangle',i*.18,0,.8) }); bell(82,1.6,1.2,.9) }
 };
 const sfx = n => { try{ SFX[n]() }catch(e){} };
-
-/* --- Música sombria: lenta, grave, com baixo dissonante e batida surda --- */
 const MEL = [0,,,3,,,6,, 5,,,,3,,,, 0,,,3,,,7,, 8,,6,,,3,,,];
 const BAS = [-12,-13,-17,-18];
 let step = 0, nextT = 0;
-
 function startMusic(){
   nextT = AC.currentTime + .1;
   setInterval(() => {
-    if(AC.state === 'suspended') AC.resume();
+    if(AC.state === 'suspended' && !paused) AC.resume();
     while(nextT < AC.currentTime + .3){
       const i = step % 32, t = nextT - AC.currentTime, n = MEL[i];
       if(n !== undefined) tone(165*Math.pow(2,n/12), .55, 'triangle', t, 0, .7, mg);
-      if(i%2 == 0)        tone(110*Math.pow(2,BAS[i>>3]/12), .26, 'triangle', t, 0, 1.2, mg);
-      if(i%8 == 4)        noise(.12, t, .3, mg);
+      if(i%2 == 0) tone(110*Math.pow(2,BAS[i>>3]/12), .26, 'triangle', t, 0, 1.2, mg);
+      if(i%8 == 4) noise(.12, t, .3, mg);
       step++; nextT += .2/rate;
     }
   }, 50);
 }
+$('#mute').onclick = () => { initAudio(); muted = !muted; mst.gain.value = muted ? 0 : 1; $('#mute').textContent = muted ? '🔇' : '🔊' };
 
-$('#mute').onclick = () => {
-  initAudio(); muted = !muted;
-  mst.gain.value = muted ? 0 : 1;
-  $('#mute').textContent = muted ? '🔇' : '🔊';
-};
-
-/* =====================================================
-   3. SPRITES (pixel art 8x8) E CONFIGURAÇÃO DO JOGO
-   ===================================================== */
+/* ===== 3. SPRITES E CONFIGURAÇÃO ===== */
 function mk(rows, pal){
   const c = document.createElement('canvas'); c.width = c.height = 8;
   const x = c.getContext('2d');
   rows.forEach((r,y) => [...r].forEach((ch,i) => { if(pal[ch]){ x.fillStyle = pal[ch]; x.fillRect(i,y,1,1) } }));
   return c;
 }
-
-// Molde do cavaleiro (usado pelo protagonista e pelo Cavaleiro Celeste)
 const KN = ["..hhhh.s",".hHHHh.s",".hvvvh.s","..aaaass",".aaaaaa.",".aaaaaa.","..aaaa..","..l..l.."];
-
 const SP = {
-  // Protagonista (armadura escura com espada no ombro)
   p:  mk(KN, {h:'#3c3c50',H:'#62627a',v:'#c01428',a:'#26263a',l:'#14141e',s:'#c8d0e0'}),
-  // Ameaças
-  e0: mk(["..tttt..",".tfffft.",".tfeefft","..tttt..",".ttttkk.",".fttttk.","..tttt..","..b..b.."],
-         {t:'#6b4423',f:'#d9a77a',e:'#222',k:'#d8d8d8',b:'#3a2410'}),                       // Bandido
-  e1: mk(KN, {h:'#f0f0f8',H:'#fff',v:'#4a90e0',a:'#dcdcec',l:'#a0a0ba',s:'#fff'}),          // Cavaleiro Celeste
-  e2: mk(["c.cccc.c",".cccccc.","..ffff..","..fefe..","rrwwwwrr","rkrrrrkr","rrrrrrrr",".kk..kk."],
-         {c:'#f0b82a',f:'#e0b088',e:'#111',r:'#b01428',k:'#151515',w:'#eee'}),               // Rei Escarlate
-  // Tesouros
-  t0: mk(["..oooo..",".oyyyyo.","oyyYyyyo","oyyYyyyo","oyyyyyyo","oyyyyyyo",".oyyyyo.","..oooo.."],
-         {o:'#b8860b',y:'#ffd700',Y:'#fff3a0'}),                                            // Moeda de Ouro
-  t1: mk(["g......g","g......g",".g....g.",".g....g.","..g..g..","...gg...","..dDDd..","...dd..."],
-         {g:'#ccc',d:'#40e0f0',D:'#fff'}),                                                  // Colar de Diamante
-  t2: mk(["........","c..cc..c","cc.cc.cc","cccccccc","cGecceGc","cccccccc","cccccccc","........"],
-         {c:'#d4a017',G:'#a8ffc0',e:'#10b050'})                                             // Coroa de Esmeralda
+  e0: mk(["..tttt..",".tfffft.",".tfeefft","..tttt..",".ttttkk.",".fttttk.","..tttt..","..b..b.."],{t:'#6b4423',f:'#d9a77a',e:'#222',k:'#d8d8d8',b:'#3a2410'}),
+  e1: mk(KN, {h:'#f0f0f8',H:'#fff',v:'#4a90e0',a:'#dcdcec',l:'#a0a0ba',s:'#fff'}),
+  e2: mk(["c.cccc.c",".cccccc.","..ffff..","..fefe..","rrwwwwrr","rkrrrrkr","rrrrrrrr",".kk..kk."],{c:'#f0b82a',f:'#e0b088',e:'#111',r:'#b01428',k:'#151515',w:'#eee'}),
+  t0: mk(["..oooo..",".oyyyyo.","oyyYyyyo","oyyYyyyo","oyyyyyyo","oyyyyyyo",".oyyyyo.","..oooo.."],{o:'#b8860b',y:'#ffd700',Y:'#fff3a0'}),
+  t1: mk(["g......g","g......g",".g....g.",".g....g.","..g..g..","...gg...","..dDDd..","...dd..."],{g:'#ccc',d:'#40e0f0',D:'#fff'}),
+  t2: mk(["........","c..cc..c","cc.cc.cc","cccccccc","cGecceGc","cccccccc","cccccccc","........"],{c:'#d4a017',G:'#a8ffc0',e:'#10b050'})
 };
-
-// Tesouros: p = pontos, w = chance (%)
-const TREAS = [
-  {s:'t0', p:2,  w:60, snd:'coin'},
-  {s:'t1', p:5,  w:30, snd:'neck'},
-  {s:'t2', p:10, w:10, snd:'crown'}
-];
-// Ameaças: d = dano, w = chance (%)
-const ENEM = [
-  {s:'e0', d:2,  w:60, snd:'e0'},
-  {s:'e1', d:5,  w:30, snd:'e1'},
-  {s:'e2', d:10, w:10, snd:'e2'}
-];
-// Sorteio por porcentagem
+const TREAS = [{s:'t0',p:2,w:60,snd:'coin'},{s:'t1',p:5,w:30,snd:'neck'},{s:'t2',p:10,w:10,snd:'crown'}];
+const ENEM  = [{s:'e0',d:2,w:60,snd:'e0'},{s:'e1',d:5,w:30,snd:'e1'},{s:'e2',d:10,w:10,snd:'e2'}];
 const pick = a => { let r = Math.random()*100; for(const o of a){ if((r -= o.w) < 0) return o } return a[0] };
 
-/* =====================================================
-   4. CENÁRIO (noite)
-   ===================================================== */
+/* ===== 4. CENÁRIO ===== */
 const W = 480, cv = $('#game'), cx = cv.getContext('2d');
 cx.imageSmoothingEnabled = false;
-
-/* --- Arena noturna com lápides (desenhada uma vez) --- */
 const arena = document.createElement('canvas'); arena.width = arena.height = W;
 (() => {
   const a = arena.getContext('2d');
-  // grama escura xadrez
   for(let y=0;y<15;y++) for(let x=0;x<15;x++){ a.fillStyle = (x+y)%2 ? '#1a2a2e' : '#16262a'; a.fillRect(x*32,y*32,32,32) }
-  // detalhes aleatórios
   for(let i=0;i<260;i++){ a.fillStyle = Math.random()<.5 ? '#233a3a' : '#0f1c20'; a.fillRect(Math.random()*W|0, Math.random()*W|0, 3, 3) }
-  // caminhos
   a.fillStyle = 'rgba(50,44,60,.6)'; a.fillRect(0,224,W,32); a.fillRect(224,0,32,W);
-  // cruz vermelha apagada
   a.fillStyle = 'rgba(110,14,30,.5)'; a.fillRect(208,112,64,256); a.fillRect(112,208,256,64);
   a.fillStyle = 'rgba(160,160,190,.18)'; a.fillRect(224,128,32,224); a.fillRect(128,224,224,32);
-  // lápides
   [[60,70],[380,60],[70,380],[400,390],[150,150],[320,320],[330,140],[140,330]].forEach(([x,y]) => {
     a.fillStyle = '#0a0f12'; a.fillRect(x-2,y+18,16,4);
     a.fillStyle = '#3a3a4a'; a.fillRect(x,y+6,12,14); a.fillRect(x+2,y,8,6);
     a.fillStyle = '#55556a'; a.fillRect(x+5,y+3,2,10); a.fillRect(x+3,y+6,6,2);
   });
-  // muralha de pedra escura
   a.fillStyle = '#2e2e3a'; for(let i=0;i<W;i+=16){ [0,W-8].forEach(p => { a.fillRect(i,p,16,8); a.fillRect(p,i,8,16) }) }
   a.fillStyle = '#1a1a24'; for(let i=8;i<W;i+=32){ [0,W-8].forEach(p => { a.fillRect(i,p,2,8); a.fillRect(p,i,8,2) }) }
 })();
-
-/* --- Fundo da tela inicial: paisagem medieval noturna --- */
 (() => {
-  const c = $('#bg'), b = c.getContext('2d');
-  // céu
+  const b = $('#bg').getContext('2d');
   ['#05040d','#0a0818','#120d26','#1c1236','#2a1a44'].forEach((col,i) => { b.fillStyle = col; b.fillRect(0,i*18,160,18) });
-  // estrelas
   for(let i=0;i<60;i++){ b.fillStyle = Math.random()<.3 ? '#fff' : '#8a8ab0'; b.fillRect(Math.random()*160|0, Math.random()*60|0, 1, 1) }
-  // lua
   b.fillStyle = '#e8e8f8'; b.fillRect(114,20,14,14);
   b.fillStyle = '#b8b8d0'; b.fillRect(117,24,3,3); b.fillRect(122,28,2,2);
   b.fillStyle = 'rgba(232,232,248,.08)'; b.fillRect(108,14,26,26);
-  // colinas
   b.fillStyle = '#0d0a1a'; for(let x=0;x<160;x++) b.fillRect(x, 72-Math.abs(Math.sin(x/17)*14)|0, 1, 50);
-  // castelo com janelas acesas
   b.fillStyle = '#050309'; b.fillRect(20,52,60,30);
   [[18,40],[40,34],[64,40]].forEach(([x,y]) => { b.fillRect(x,y,12,42); b.fillRect(x-1,y-4,3,4); b.fillRect(x+4,y-4,3,4); b.fillRect(x+9,y-4,3,4); b.fillRect(x+3,y-12,6,8) });
   b.fillStyle = '#e8a030'; [[23,50],[45,44],[69,50],[47,60]].forEach(([x,y]) => b.fillRect(x,y,2,3));
   b.fillStyle = '#8f1224'; b.fillRect(53,64,6,14);
-  // campo escuro
   b.fillStyle = '#04080a'; b.fillRect(0,92,160,28); for(let x=0;x<160;x+=3) b.fillRect(x, 91+(x*7%4), 2, 3);
   b.fillStyle = '#0b1418'; for(let x=0;x<160;x+=5) b.fillRect(x, 100+(x*3%12), 3, 1);
-  // árvore morta
   b.fillStyle = '#050309'; b.fillRect(135,70,2,22); b.fillRect(130,74,12,2); b.fillRect(132,80,8,2);
-  // cavaleiro de olhos vermelhos
   b.fillStyle = '#1a1624'; b.fillRect(100,80,6,12); b.fillStyle = '#8890a8'; b.fillRect(107,70,1,14);
   b.fillStyle = '#e02040'; b.fillRect(101,82,1,1); b.fillRect(104,82,1,1);
 })();
 
-/* =====================================================
-   5. ESTADO E REGRAS DO JOGO
-   ===================================================== */
+/* ===== 5. REGRAS ===== */
 let state = 'menu', P, ents, texts, score, hp, lives, tm, spawnT, lvl, shake, flash, cur;
 const keys = new Set();
-
 function reset(){
-  P = {x:224, y:224, s:32};
-  ents = []; texts = [];
-  score = 0; hp = 10; lives = 3;
-  tm = 0; spawnT = .6; lvl = 1; shake = 0; flash = 0; rate = 1;
+  P = {x:224, y:224, s:32}; ents = []; texts = [];
+  score = 0; hp = 10; lives = 3; tm = 0; spawnT = .6; lvl = 1; shake = 0; flash = 0; rate = 1;
 }
-
-/* --- Cria um tesouro ou inimigo entrando por uma borda --- */
 function spawn(){
-  const isE = Math.random() < Math.min(.65, .4 + tm/300),   // mais inimigos com o tempo
-        o   = pick(isE ? ENEM : TREAS),
-        sp  = (70 + Math.random()*50) * Math.min(3, 1 + tm/70),   // velocidade cresce
-        dir = Math.random()*4 | 0,
-        r   = Math.random()*(W-40) + 4,
-        e   = {e:isE, o, x:0, y:0, vx:0, vy:0, s:32, a:Math.random()*6};
-  if(dir == 0){ e.x = -40;  e.y = r; e.vx =  sp }       // da esquerda
-  else if(dir == 1){ e.x = W+8; e.y = r; e.vx = -sp }   // da direita
-  else if(dir == 2){ e.y = -40; e.x = r; e.vy =  sp }   // de cima
-  else { e.y = W+8; e.x = r; e.vy = -sp }               // de baixo
+  const isE = Math.random() < Math.min(.65, .4 + tm/300),
+        o = pick(isE ? ENEM : TREAS),
+        sp = (70 + Math.random()*50) * Math.min(3, 1 + tm/70),
+        dir = Math.random()*4 | 0, r = Math.random()*(W-40) + 4,
+        e = {e:isE, o, x:0, y:0, vx:0, vy:0, s:32, a:Math.random()*6};
+  if(dir == 0){ e.x = -40; e.y = r; e.vx = sp }
+  else if(dir == 1){ e.x = W+8; e.y = r; e.vx = -sp }
+  else if(dir == 2){ e.y = -40; e.x = r; e.vy = sp }
+  else { e.y = W+8; e.x = r; e.vy = -sp }
   ents.push(e);
 }
-
-/* --- Jogador encostou em algo --- */
 function hit(e){
   const o = e.o;
   if(!e.e){
@@ -388,45 +344,29 @@ function hit(e){
     }
   }
 }
-
-/* --- Atualização a cada quadro --- */
 function update(dt){
   tm += dt;
   const mul = Math.min(3, 1 + tm/70), nl = 1 + (tm/20|0);
   if(nl > lvl){ lvl = nl; sfx('level'); texts.push({x:170, y:200, t:'NÍVEL '+lvl, c:'#fff', l:1.2}) }
-  rate = 1 + (mul-1)*.25;   // a música acelera junto
-
-  // movimento
-  let dx = (keys.has('d')|0) - (keys.has('a')|0),
-      dy = (keys.has('s')|0) - (keys.has('w')|0);
+  rate = 1 + (mul-1)*.25;
+  let dx = (keys.has('d')|0) - (keys.has('a')|0), dy = (keys.has('s')|0) - (keys.has('w')|0);
   if(dx && dy){ dx *= .707; dy *= .707 }
   P.x = Math.max(8, Math.min(W-8-P.s, P.x + dx*190*dt));
   P.y = Math.max(8, Math.min(W-8-P.s, P.y + dy*190*dt));
-
-  // novos elementos
   spawnT -= dt;
   if(spawnT <= 0 && ents.length < 8 + tm/8){ spawn(); spawnT = Math.max(.22, .85 - tm*.008) }
-
-  // movimento e colisão dos elementos
   for(let i = ents.length-1; i >= 0; i--){
     const e = ents[i];
     e.x += e.vx*dt; e.y += e.vy*dt; e.a += dt*6;
     if(e.x < -60 || e.x > W+60 || e.y < -60 || e.y > W+60){ ents.splice(i,1); continue }
-    if(Math.abs(e.x-P.x) < 22 && Math.abs(e.y-P.y) < 22){
-      ents.splice(i,1); hit(e);
-      if(state !== 'play') return;
-    }
+    if(Math.abs(e.x-P.x) < 22 && Math.abs(e.y-P.y) < 22){ ents.splice(i,1); hit(e); if(state !== 'play') return }
   }
-
-  // textos flutuantes e efeitos
   texts.forEach(t => { t.l -= dt; t.y -= 26*dt });
   texts = texts.filter(t => t.l > 0);
   shake = Math.max(0, shake-dt); flash = Math.max(0, flash-dt);
 }
 
-/* =====================================================
-   6. DESENHO (cenário, escuridão, personagens e HUD)
-   ===================================================== */
+/* ===== 6. DESENHO ===== */
 function heart(x, y, c){
   cx.fillStyle = c;
   ['.x.x.','xxxxx','xxxxx','.xxx.','..x..'].forEach((r,j) => [...r].forEach((ch,i) => { if(ch == 'x') cx.fillRect(x+i*3, y+j*3, 3, 3) }));
@@ -434,68 +374,41 @@ function heart(x, y, c){
 function txt(s, x, y, c='#fff', sz=10, al='left'){
   cx.font = sz + "px 'Press Start 2P',monospace"; cx.textAlign = al;
   cx.fillStyle = '#000'; cx.fillText(s, x+2, y+2);
-  cx.fillStyle = c;      cx.fillText(s, x, y);
+  cx.fillStyle = c; cx.fillText(s, x, y);
 }
-
 function draw(){
   cx.save();
   if(shake > 0) cx.translate((Math.random()-.5)*8, (Math.random()-.5)*8);
-
   cx.drawImage(arena, 0, 0);
-
-  // sombras
   cx.fillStyle = 'rgba(0,0,0,.25)';
   ents.concat([P]).forEach(e => cx.fillRect(e.x+4, e.y+e.s-4, e.s-8, 6));
-
-  // tesouros e inimigos (camada de baixo)
-  ents.forEach(e => {
-    const bob = e.e ? 0 : Math.sin(e.a)*2;
-    cx.drawImage(SP[e.o.s], e.x, e.y+bob, 32, 32);
-  });
-
-  // jogador
+  ents.forEach(e => cx.drawImage(SP[e.o.s], e.x, e.y + (e.e ? 0 : Math.sin(e.a)*2), 32, 32));
   cx.drawImage(SP.p, P.x, P.y, 32, 32);
-
-  // escuridão: só a área ao redor do cavaleiro (tocha) fica clara
   const g = cx.createRadialGradient(P.x+16, P.y+16, 40, P.x+16, P.y+16, 190);
-  g.addColorStop(0, 'rgba(2,2,14,0)');
-  g.addColorStop(1, 'rgba(2,2,14,.82)');
+  g.addColorStop(0, 'rgba(2,2,14,0)'); g.addColorStop(1, 'rgba(2,2,14,.82)');
   cx.fillStyle = g; cx.fillRect(-10, -10, W+20, W+20);
-
-  // brilho dos elementos por cima da escuridão (dourado = tesouro, vermelho = ameaça)
   ents.forEach(e => {
     const gx = cx.createRadialGradient(e.x+16, e.y+16, 2, e.x+16, e.y+16, 26);
-    gx.addColorStop(0, e.e ? 'rgba(220,30,50,.35)' : 'rgba(255,215,90,.4)');
-    gx.addColorStop(1, 'rgba(0,0,0,0)');
+    gx.addColorStop(0, e.e ? 'rgba(220,30,50,.35)' : 'rgba(255,215,90,.4)'); gx.addColorStop(1, 'rgba(0,0,0,0)');
     cx.fillStyle = gx; cx.fillRect(e.x-10, e.y-10, 52, 52);
     cx.globalAlpha = e.e ? .6 : 1;
     cx.drawImage(SP[e.o.s], e.x, e.y + (e.e ? 0 : Math.sin(e.a)*2), 32, 32);
     cx.globalAlpha = 1;
   });
-
-  // jogador de novo, sempre visível
   cx.drawImage(SP.p, P.x, P.y, 32, 32);
-
-  // textos flutuantes
   texts.forEach(t => txt(t.t, t.x, t.y, t.c, 12));
   cx.restore();
-
-  // flash vermelho ao levar dano
   if(flash > 0){ cx.fillStyle = 'rgba(200,20,40,'+flash*1.2+')'; cx.fillRect(0,0,W,W) }
-
-  // HUD
   cx.fillStyle = 'rgba(10,6,14,.7)'; cx.fillRect(0,0,W,44);
   txt('PONTOS '+score, 14, 22, '#ffd54a', 11);
-  txt('NIVEL '+lvl,    14, 38, '#efe0b8', 8);
+  txt('NIVEL '+lvl, 14, 38, '#efe0b8', 8);
   for(let i=0;i<lives;i++) heart(W-14-(i+1)*20, 8, '#e0243a');
-  cx.fillStyle = '#000';    cx.fillRect(W-130, 28, 116, 10);
+  cx.fillStyle = '#000'; cx.fillRect(W-130, 28, 116, 10);
   cx.fillStyle = '#3a8a3a'; cx.fillRect(W-128, 30, 112*hp/10, 6);
   txt(cur||'', W/2, 22, '#9a8f78', 8, 'center');
 }
 
-/* =====================================================
-   7. LOOP PRINCIPAL
-   ===================================================== */
+/* ===== 7. LOOP ===== */
 let lastT = 0;
 function loop(t){
   const dt = Math.min(.05, (t-lastT)/1000 || 0); lastT = t;
@@ -504,53 +417,68 @@ function loop(t){
 }
 requestAnimationFrame(loop);
 
-/* =====================================================
-   8. FLUXO DE TELAS
-   ===================================================== */
+/* ===== 8. TELAS ===== */
 const show = id => {
   document.querySelectorAll('.ov').forEach(o => o.classList.toggle('on', o.id === id));
   $('#pad').classList.toggle('on', id === '');
+  $('#pause').style.display = id === '' ? 'block' : 'none';
 };
 function fadeTo(fn){
   const f = $('#fade'); f.classList.add('on');
   setTimeout(() => { fn(); requestAnimationFrame(() => f.classList.remove('on')) }, 850);
 }
+const toMenu = () => { state = 'menu'; show('menu') };
+function table(el, head, rows){
+  el.innerHTML = '';
+  const h = document.createElement('tr');
+  head.forEach(t => { const th = document.createElement('th'); th.textContent = t; h.append(th) });
+  el.append(h);
+  rows.forEach(r => {
+    const tr = document.createElement('tr'); if(r.me) tr.className = 'me';
+    r.c.forEach(t => { const td = document.createElement('td'); td.textContent = t; tr.append(td) });
+    el.append(tr);
+  });
+}
+/* ranking: 10 primeiros + a posição do jogador (se estiver fora do top 10) */
+async function renderRank(el, me, withLast){
+  const list = (await store.all()).filter(p => p && p.name).sort((a,b) => b.best - a.best);
+  const row = (p,i) => ({me: me && p.name.toLowerCase() === me.toLowerCase(), c: [i+1, p.name, p.best].concat(withLast ? [p.last] : [])});
+  const rows = list.slice(0,10).map(row);
+  const idx = me ? list.findIndex(p => p.name.toLowerCase() === me.toLowerCase()) : -1;
+  if(idx >= 10){ rows.push({c:['…','','']}); rows.push(row(list[idx], idx)) }
+  table(el, ['#','Nome','Recorde'].concat(withLast ? ['Última'] : []), rows);
+  return {pos: idx+1, total: list.length};
+}
 
-/* --- Tela inicial -> nome --- */
 $('#play').onclick = () => {
   initAudio(); sfx('click'); state = 'name'; show('name');
-  $('#nm').value = S.last || ''; chk();
+  $('#nm').value = meta.last || ''; chk();
   setTimeout(() => $('#nm').focus(), 50);
 };
-
-/* --- Tela de nome --- */
-function chk(){
-  const n = $('#nm').value.trim(), p = S.players[n];
-  $('#cont').disabled = !n;
-  $('#hint').textContent = !n ? '' : p ? 'Bem-vindo de volta! Recorde: '+p.best : 'Novo jogador';
+let chkTok = 0;
+async function chk(){
+  const n = $('#nm').value.trim(), tok = ++chkTok;
+  $('#cont').disabled = !n; $('#hint').textContent = '';
+  if(!n) return;
+  const p = await store.get(n);
+  if(tok === chkTok) $('#hint').textContent = p ? 'Bem-vindo de volta! Recorde: '+p.best : 'Novo jogador';
 }
 $('#nm').oninput = chk;
 $('#nm').onkeydown = e => { if(e.key === 'Enter' && !$('#cont').disabled) $('#cont').click() };
-
-$('#cont').onclick = () => {
+$('#cont').onclick = async () => {
   const n = $('#nm').value.trim(); if(!n) return;
-  sfx('start'); cur = n; S.last = n;
-  if(!S.players[n]) S.players[n] = {best:0, last:0, history:[]};
-  save(); $('#nm').blur();
-  if(S.players[n].seen){ startPlay() }                       // já viu as instruções
+  $('#cont').disabled = true; sfx('start'); $('#nm').blur();
+  cur = n; meta.last = n; sj('kos_meta', meta);
+  if(!await store.get(n)) await store.put(n, {name:n, best:0, last:0, games:0, history:[], t:Date.now()});
+  $('#cont').disabled = false;
+  if(meta.seen[n]) startPlay();
   else { sfx('click'); state = 'help'; buildHelp(); show('help') }
 };
+function startPlay(){ reset(); paused = false; state = 'play'; show('') }
 
-function startPlay(){ reset(); state = 'play'; show('') }
-
-/* --- Tela "Como jogar" --- */
 const HN = {
-  t0:['Moeda de Ouro','2 pontos · aparece mais'],
-  t1:['Colar de Diamante','5 pontos · comum'],
-  t2:['Coroa de Esmeralda','10 pontos · raríssima'],
-  e0:['Bandido das Montanhas','2 de dano · mais comum'],
-  e1:['Cavaleiro Celeste','5 de dano · comum'],
-  e2:['Rei Escarlate','10 de dano · raro e perigoso']
+  t0:['Moeda de Ouro','2 pontos · aparece mais'], t1:['Colar de Diamante','5 pontos · comum'], t2:['Coroa de Esmeralda','10 pontos · raríssima'],
+  e0:['Bandido das Montanhas','2 de dano · mais comum'], e1:['Cavaleiro Celeste','5 de dano · comum'], e2:['Rei Escarlate','10 de dano · raro e perigoso']
 };
 function buildHelp(){
   const hl = $('#hl'); if(hl.children.length) return;
@@ -566,50 +494,89 @@ function buildHelp(){
     hl.append(d);
   });
 }
-$('#go').onclick = () => { S.players[cur].seen = true; save(); sfx('start'); startPlay() };
-addEventListener('keydown', e => { if(state === 'help' && e.key === 'Enter') $('#go').click() });
+$('#go').onclick = () => { meta.seen[cur] = true; sj('kos_meta', meta); sfx('start'); startPlay() };
+
+/* --- Pausa --- */
+function pause(){
+  if(state !== 'play') return;
+  state = 'pause'; paused = true; keys.clear();
+  if(AC) AC.suspend();
+  show('pausa');
+}
+function resume(){
+  if(state !== 'pause') return;
+  state = 'play'; paused = false; lastT = performance.now();
+  if(AC) AC.resume();
+  show('');
+}
+$('#pause').onclick = () => { sfx('click'); pause() };
+$('#resume').onclick = () => { sfx('click'); resume() };
+$('#quit').onclick = () => { paused = false; if(AC) AC.resume(); endGame() };
+addEventListener('blur', pause);
+document.addEventListener('visibilitychange', () => { if(document.hidden) pause() });
 
 /* --- Game over + ranking --- */
-function endGame(){
-  state = 'over'; sfx('over');
-  const p = S.players[cur];
-  p.last = score; p.best = Math.max(p.best, score);
-  p.history.push(score); p.history = p.history.slice(-50);
-  save();
-
-  $('#fin').innerHTML = cur+': '+score+' pontos<br>Seu recorde: '+p.best;
-  const rows = Object.entries(S.players).sort((a,b) => b[1].best - a[1].best);
-  $('#rk').innerHTML = '<tr><th>#</th><th>Nome</th><th>Recorde</th><th>Última</th></tr>' +
-    rows.map(([n,v],i) => `<tr class="${n===cur?'me':''}"><td>${i+1}</td><td></td><td>${v.best}</td><td>${v.last}</td></tr>`).join('');
-  [...$('#rk').querySelectorAll('tr:not(:first-child)')].forEach((tr,i) => tr.children[1].textContent = rows[i][0]);
-
-  keys.clear(); show('over');
-  clearTimeout(window._ov); window._ov = setTimeout(goMenu, 9000);   // volta sozinho em 9s
+async function endGame(){
+  state = 'over'; sfx('over'); keys.clear(); show('over');
+  const n = cur, sc = score;
+  $('#fin').textContent = n+': '+sc+' pontos — salvando...';
+  $('#rk').innerHTML = '';
+  clearTimeout(window._ov); window._ov = setTimeout(goMenu, 25000);
+  const p = (await store.get(n)) || {name:n, best:0, last:0, games:0, history:[]};
+  p.name = n; p.last = sc; p.best = Math.max(p.best||0, sc); p.games = (p.games||0)+1; p.t = Date.now();
+  p.history = (p.history||[]).concat([{s:sc, t:Date.now()}]).slice(-50);
+  await store.put(n, p);
+  $('#fin').innerHTML = '';
+  $('#fin').append(n+': '+sc+' pontos', document.createElement('br'), 'Seu recorde: '+p.best);
+  const r = await renderRank($('#rk'), n, true);
+  if(r.pos) $('#fin').append(document.createElement('br'), 'Sua posição no ranking: '+r.pos+'º de '+r.total);
 }
 function goMenu(){
   clearTimeout(window._ov);
   if(state !== 'over') return;
-  state = 'fading';
-  fadeTo(() => { state = 'menu'; show('menu') });
+  state = 'fading'; fadeTo(toMenu);
 }
 $('#back').onclick = () => { sfx('click'); goMenu() };
 
-/* =====================================================
-   9. CONTROLES (teclado e botões de toque)
-   ===================================================== */
-const MAP = {w:'w', arrowup:'w', s:'s', arrowdown:'s', a:'a', arrowleft:'a', d:'d', arrowright:'d'};
-addEventListener('keydown', e => { const k = MAP[e.key.toLowerCase()]; if(k && state === 'play'){ keys.add(k); e.preventDefault() } });
-addEventListener('keyup',   e => { const k = MAP[e.key.toLowerCase()]; if(k) keys.delete(k) });
-addEventListener('blur', () => keys.clear());
+/* --- Histórico e ranking a partir do menu --- */
+$('#bHist').onclick = () => { initAudio(); sfx('click'); state = 'hist'; show('hist'); $('#hr').textContent = ''; $('#hn').value = ''; setTimeout(() => $('#hn').focus(), 50) };
+$('#hb').onclick = () => { sfx('click'); toMenu() };
+async function search(){
+  const n = $('#hn').value.trim(), out = $('#hr'); if(!n) return;
+  out.textContent = 'Buscando...';
+  const p = await store.get(n);
+  if(!p){ out.textContent = 'Nenhum jogador com o nick "'+n+'".'; return }
+  out.innerHTML = '';
+  const t = document.createElement('div'); t.style.color = 'var(--gold)';
+  t.textContent = p.name+' · Recorde '+p.best+' · '+(p.games||0)+' partidas';
+  const tb = document.createElement('table'); tb.className = 'tb'; tb.style.margin = '10px auto';
+  const rows = (p.history||[]).slice().reverse().map((h,i) => {
+    const s = typeof h === 'object' ? h.s : h, d = typeof h === 'object' && h.t ? new Date(h.t).toLocaleDateString('pt-BR') : '-';
+    return {c:[i+1, s, d]};
+  });
+  table(tb, ['#','Pontos','Data'], rows);
+  out.append(t, tb);
+}
+$('#hs').onclick = search;
+$('#hn').onkeydown = e => { if(e.key === 'Enter') search() };
+$('#bRank').onclick = async () => { initAudio(); sfx('click'); state = 'rank'; show('rank'); $('#rt').innerHTML = ''; await renderRank($('#rt'), meta.last, false) };
+$('#rb').onclick = () => { sfx('click'); toMenu() };
 
+/* ===== 9. CONTROLES ===== */
+const MAP = {w:'w', arrowup:'w', s:'s', arrowdown:'s', a:'a', arrowleft:'a', d:'d', arrowright:'d'};
+addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if((k === 'p' || k === 'escape') && (state === 'play' || state === 'pause')){ state === 'play' ? pause() : resume(); return }
+  if(state === 'help' && e.key === 'Enter') $('#go').click();
+  if(MAP[k] && state === 'play'){ keys.add(MAP[k]); e.preventDefault() }
+});
+addEventListener('keyup', e => { const k = MAP[e.key.toLowerCase()]; if(k) keys.delete(k) });
 document.querySelectorAll('#pad button').forEach(b => {
   const k = b.dataset.k;
   b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); keys.add(k) });
   ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, () => keys.delete(k)));
   b.addEventListener('contextmenu', e => e.preventDefault());
 });
-
-/* --- Ajusta o tamanho do jogo à tela --- */
 function fit(){ const s = Math.min(innerWidth, innerHeight) - 16; cv.style.width = cv.style.height = Math.max(240, s) + 'px' }
 addEventListener('resize', fit); fit();
 </script>
